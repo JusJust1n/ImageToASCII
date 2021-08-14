@@ -9,39 +9,27 @@ def calcRemainder(index, height):
 def calcBrightness(r, g, b):
     return ((r + g + b) // 3)
 
-def brightnessToASCII(bdata, width, height):
+def brightnessToASCII(bdata, width, height, scale):
     for i in range(width):
         for j in range(height):
-            if (bdata[i][j] < 25):
-                bdata[i][j] = "   "
-            elif (bdata[i][j] >= 25 and bdata[i][j] < 50):
-                bdata[i][j] = "..."
-            elif (bdata[i][j] >= 50 and bdata[i][j] < 75):
-                bdata[i][j] = ":::"
-            elif (bdata[i][j] >= 75 and bdata[i][j] < 100):
-                bdata[i][j] = "---"
-            elif (bdata[i][j] >= 100 and bdata[i][j] < 125):
-                bdata[i][j] = "==="
-            elif (bdata[i][j] >= 125 and bdata[i][j] < 150):
-                bdata[i][j] = "+++"
-            elif (bdata[i][j] >= 150 and bdata[i][j] < 175):
-                bdata[i][j] = "***"
-            elif (bdata[i][j] >= 175 and bdata[i][j] < 200):
-                bdata[i][j] = "###"
-            elif (bdata[i][j] >= 200 and bdata[i][j] < 225):
-                bdata[i][j] = "%%%"
-            elif (bdata[i][j] >= 225 and bdata[i][j] <= 255):
-                bdata[i][j] = "@@@"
+            if ((bdata[i][j] // 25) == 10):
+                bdata[i][j] = 9
+            else:
+                bdata[i][j] = scale[bdata[i][j] // 25]
     
 def main():
+    print("This program takes a specified .jpg/.jpeg image and prints it into ASCII characters (zoom out all the way to see the full picture)!")
     print("Select An Option: ")
+    print("0. Exit Program")
     print("1. Example jpg Image")
     print("2. Choose a jpg Image")
 
     im = Image.open("cat.jpeg")
 
-    choice = input()
-    if (choice == 1):
+    choice = int(input())
+    if (choice == 0):
+        exit()
+    elif (choice == 1):
         im = Image.open("cat.jpeg") 
     elif (choice == 2):
         print("Type the image name with the extention")
@@ -50,32 +38,35 @@ def main():
 
     width = im.width
     height = im.height
-
+    scale = ["   ", "...", ":::", "---", "===", "+++", "***", "###", "%%%", "@@@"]
+    
     if (width > 299 and height > 299):
         im = im.resize((299, 299))
         width = 299
         height = 299
     elif (width > 299):
-        im = im.resize((299, height))
+        im = im.resize((299, 299))
         width = 299
-    elif (height > 299):
-        im = im.resize((width, 299))
         height = 299
-        
+    elif (height > 299):
+        im = im.resize((299, 299))
+        width = 299
+        height = 299
+
     _data = list(im.getdata())
 
     # turns _data into a 2D list
     data2D = [[None for _ in range(height)] for _ in range(width)]
     for i in range(len(_data)):
         data2D[calcRemainder(i, height)][calcQuotient(i, height)] = _data[i]
-    # bdata is brightness data from data2D
-    bdata = [[None for _ in range(height)] for _ in range(width)]
+    # brightData is brightness data from data2D
+    brightData = [[None for _ in range(height)] for _ in range(width)]
     for i in range(width):
         for j in range(height):
-            bdata[i][j] = calcBrightness(data2D[i][j][0], data2D[i][j][1], data2D[i][j][2])
-    brightnessToASCII(bdata, width, height)
+            brightData[i][j] = calcBrightness(data2D[i][j][0], data2D[i][j][1], data2D[i][j][2])
+    brightnessToASCII(brightData, width, height, scale)
     for i in range(width):
-        print("".join(str(x) for x in bdata[i]))
+        print("".join(str(x) for x in brightData[i]))
 
 if __name__ == "__main__":
     main()
